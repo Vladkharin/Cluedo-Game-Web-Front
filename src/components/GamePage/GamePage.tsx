@@ -37,7 +37,7 @@ export function GamePage() {
 
   const [cubes, setCubes] = useState<{ first: number | string; second: number | string; total: number }>({ first: 0, second: 0, total: 0 });
 
-  console.log(phase);
+  console.log(grid);
 
   return (
     <section className="w-screen h-screen">
@@ -68,26 +68,25 @@ function findingPathsForThePlayer(
   cubes: number,
   xStart: number,
   yStart: number,
-  setGrid: React.Dispatch<React.SetStateAction<number[][]>>,
-  i: number = 0
+  setGrid: React.Dispatch<React.SetStateAction<number[][]>>
+  // i: number = 0
 ) {
-  console.log(i);
-  if (grid[xStart][yStart] != 5) {
-    return;
+  // cubes += 1;
+  // if (cubes == 0) {
+  //   return;
+  // }
+
+  // if (x != xStart && y != yStart) {
+  //   grid[x][y] = 6;
+
+  //   setGrid(grid);
+  // }
+
+  grid[x][y] = 6;
+
+  if (grid[xStart][yStart] == 5) {
+    grid[xStart][yStart] = 5;
   }
-
-  cubes += 1;
-  if (cubes == 0) {
-    return;
-  }
-
-  if (x != xStart && y != yStart) {
-    grid[x][y] = 6;
-
-    setGrid(grid);
-  }
-
-  const decriment = --cubes;
 
   for (const [dx, dy] of [
     [1, 0],
@@ -99,8 +98,13 @@ function findingPathsForThePlayer(
     const nextY = y + dy;
 
     if (withinGrid(grid.length, grid[0].length, nextX, nextY) && grid[nextX][nextY] === 1) {
-      i++;
-      findingPathsForThePlayer(grid, nextX, nextY, decriment, xStart, yStart, setGrid, i);
+      if (Math.abs(nextX - xStart) + Math.abs(nextY - yStart) <= cubes) {
+        console.log([nextX, nextY]);
+
+        setGrid(grid);
+
+        findingPathsForThePlayer(grid, nextX, nextY, cubes, xStart, yStart, setGrid);
+      }
     }
   }
 }
