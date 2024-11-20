@@ -26,33 +26,22 @@ const gridDefault = [
   [0, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 4, 2, 2, 2, 2, 2, 2, 0],
   [0, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 0],
   [0, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 0],
-  [0, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 2, 2, 2, 2, 2, 0],
+  [0, 2, 2, 2, 2, 2, 2, 3, 5, 3, 2, 2, 2, 2, 2, 2, 3, 1, 3, 2, 2, 2, 2, 2, 2, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
 export function GamePage() {
   const [grid, setGrid] = useState(gridDefault);
 
+  const [number, setNumber] = useState(0);
+
   const [phase, setPhase] = useState({ status: "the beginning of the first stages of the move", player: 1, text: "Киньте кубики" });
 
   const [cubes, setCubes] = useState<{ first: number | string; second: number | string; total: number }>({ first: 0, second: 0, total: 0 });
 
-  // console.log(grid);
-
   return (
     <section className="w-screen h-screen">
-      {grid.map((row, i) => (
-        <div key={i} className={"h-10"}>
-          {row.map((val, j) => (
-            <div
-              key={i * row.length + j}
-              className={`w-10 h-10 inline-block ${findColorForTile(val)}`}
-              onClick={() => findingPathsForThePlayer(i, j, i, j)}
-            ></div>
-          ))}
-        </div>
-      ))}
-
+      <Map grid={grid} />
       <button onClick={() => randomCubes(phase, setPhase, setCubes)}>Бросить кубики</button>
       <div>Первый кубик: {cubes.first}</div>
       <div>Второй кубик: {cubes.second}</div>
@@ -60,18 +49,27 @@ export function GamePage() {
     </section>
   );
 
-  function findingPathsForThePlayer(x: number, y: number, xStart: number, yStart: number) {
-    // cubes += 1;
-    // if (cubes == 0) {
-    //   return;
-    // }
+  function Map({ grid }: { grid: number[][] }) {
+    return grid.map((row, i) => (
+      <div key={i} className={"h-7"}>
+        {row.map((val, j) => (
+          <div
+            key={i * row.length + j}
+            className={`w-7 h-7 inline-block ${findColorForTile(val)}`}
+            onClick={() => findingPathsForThePlayer(i, j, i, j, number)}
+          ></div>
+        ))}
+      </div>
+    ));
+  }
 
-    // if (x != xStart && y != yStart) {
-    //   grid[x][y] = 6;
+  function findingPathsForThePlayer(x: number, y: number, xStart: number, yStart: number, number: number) {
+    if (grid[xStart][yStart] != 5) {
+      return;
+    }
 
-    //   setGrid(grid);
-    // }
     grid[x][y] = 6;
+    setGrid([...grid]);
 
     if (grid[xStart][yStart] == grid[x][y]) {
       grid[xStart][yStart] = 5;
@@ -86,18 +84,22 @@ export function GamePage() {
       const nextX = x + dx;
       const nextY = y + dy;
 
-      if (withinGrid(grid.length, grid[0].length, nextX, nextY) && (grid[nextX][nextY] === 1 || grid[nextX][nextY] === 4)) {
-        if (Math.abs(nextX - xStart) + Math.abs(nextY - yStart) <= cubes.total) {
-          console.log([nextX, nextY]);
-
-          setGrid(grid);
-
-          findingPathsForThePlayer(nextX, nextY, xStart, yStart);
+      if (withinGrid(grid.length, grid[0].length, nextX, nextY) && grid[nextX][nextY] === 1) {
+        // if (Math.abs(nextX - xStart) + Math.abs(nextY - yStart) <= cubes.total) {
+        if (number > cubes.total) {
+          console.log(number, [x, y]);
+          grid[nextX][nextY] = 1;
+          return;
         }
+
+        setGrid(grid);
+
+        number++;
+
+        findingPathsForThePlayer(nextX, nextY, xStart, yStart, number);
+        // }
       }
     }
-
-    setGrid(grid);
   }
 
   function withinGrid(h: number, w: number, x: number, y: number) {
@@ -127,8 +129,10 @@ export function GamePage() {
     if (phase.status != "the beginning of the first stages of the move") {
       return;
     }
-    const firstCube = Math.floor(Math.random() * 6) + 1;
-    const secondCube = Math.floor(Math.random() * 6) + 1;
+    // const firstCube = Math.floor(Math.random() * 6) + 1;
+    // const secondCube = Math.floor(Math.random() * 6) + 1;
+    const firstCube = 6;
+    const secondCube = 6;
 
     const answer: { first: number | string; second: number | string; total: number } = {
       first: 0,
